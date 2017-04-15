@@ -1,0 +1,127 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+
+<!--
+`webda-i18n`
+Global translation
+
+@demo demo/index.html
+-->
+
+<dom-module id="webda-i18n">
+  <template></template>
+  <script>
+    if (!Polymer.Localized) {
+      Polymer.Localized = [];
+    }
+    if (!Polymer.LocalizedResources) {
+      Polymer.LocalizedResources = 'locales.json';
+    }
+    if (!Polymer.LocalizedLanguage) {
+      Polymer.LocalizedLanguage = '';
+    }
+    if (!Polymer.SetLocalizedLanguage) {
+      Polymer.SetLocalizedLanguage = function(lang) {
+        Polymer.LocalizedLanguage = lang;
+        for (var i in Polymer.Localized) {
+          Polymer.Localized[i].language = lang;
+        }
+      };
+    }
+    Polymer.AppGlobalLocalizeBehaviorImpl = {
+
+      // load localized messages
+      attached: function() {
+        Polymer.Localized.push(this);
+        this.language = Polymer.LocalizedLanguage;
+        this.loadResources(this.resolveUrl(Polymer.LocalizedResources.replace('{locale}', this.language)));
+      },
+      detached: function() {
+        var index = Polymer.Localized.indexOf(this);
+        if (index > -1) {
+          Polymer.Localized.splice(index, 1);
+        }
+      },
+      _date: function(d) {
+        if (typeof(d) === 'string') {
+          d = new Date(d);
+        }
+        if (d === undefined) {
+          return '';
+        }
+        return d.toLocaleDateString([], {
+          hour: 'numeric',
+          minute: 'numeric'
+        });
+      },
+      properties: {
+        language: {
+          value: Polymer.LocalizedLanguage
+        }
+      }
+    };
+    Polymer.AppGlobalLocalizeBehavior = [Polymer.AppLocalizeBehavior, Polymer.AppGlobalLocalizeBehaviorImpl];
+    Polymer({
+
+      is: 'webda-i18n',
+
+      _setLocale: function() {
+        if (!this.locales || !this.locale) {
+          return;
+        }
+        if (this.locales.indexOf(this.locale) < 0) {
+          console.log('Cant find locale ', this.locale);
+          return;
+        }
+        Polymer.SetLocalizedLanguage(this.locale);
+      },
+
+      _setPath: function() {
+        if (!this.path) {
+          return;
+        }
+        Polymer.LocalizedResources = this.path;
+        Polymer.SetLocalizedLanguage(this.locale);
+      },
+
+      detectLocale: function() {
+        for (var i in navigator.languages) {
+          if (this.locales.indexOf(navigator.languages[i]) >= 0) {
+            Polymer.SetLocalizedLanguage(navigator.languages[i]);
+            return navigator.languages[i];
+          }
+        }
+        return 'en';
+      },
+
+      ready: function() {
+        if (this.auto) {
+          this.locale = this.detectLocale();
+        }
+      },
+
+      properties: {
+        auto: {
+          type: Boolean,
+          value: false
+        },
+
+        path: {
+          type: String,
+          value: 'locales.json',
+          observer: '_setPath'
+        },
+        locale: {
+          type: String,
+          value: 'en',
+          observer: '_setLocale'
+        },
+        locales: {
+          type: Array,
+          value: ['en'],
+        },
+      },
+
+    });
+  </script>
+</dom-module>

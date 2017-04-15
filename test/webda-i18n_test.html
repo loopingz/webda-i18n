@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>webda-i18n test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../webda-i18n.html">
+    <link rel="import" href="../webda-i18n-label.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <webda-i18n auto path='./test/locales.json'></webda-i18n>
+      </template>
+    </test-fixture>
+    <test-fixture id="label">
+      <template>
+        <webda-i18n-label label='TEST'></webda-i18n-label>
+        <webda-i18n auto path='./test/locales.json'></webda-i18n>
+      </template>
+    </test-fixture>
+    <script>
+      suite('webda-i18n', function() {
+        test('instantiating the element works', function() {
+          var element = fixture('basic');
+          assert.equal(element.is, 'webda-i18n');
+          assert.equal(element.locale, 'en');
+        });
+        test('check element translate', function(done) {
+          var element = fixture('label')[0];
+          assert.equal(element.is, 'webda-i18n-label');
+          element.addEventListener('app-localize-resources-loaded', function() {
+            assert.equal('Webda', element.textContent.trim());
+            done();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
