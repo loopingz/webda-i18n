@@ -85,13 +85,31 @@ Global translation
       },
 
       detectLocale: function() {
+
+        // Look into query
+        if (top.location.search) {
+          let queries = top.location.search.substr(1).split('&');
+          for (let i in queries) {
+            let split = queries[i].split('=');
+            if (split[0] === 'locale') {
+              if (this.locales.indexOf(split[1]) >= 0) {
+                Polymer.SetLocalizedLanguage(split[i]);
+                return split[1];
+              }
+            }
+          }
+        }
+
+        // Check the browser language
         for (var i in navigator.languages) {
           if (this.locales.indexOf(navigator.languages[i]) >= 0) {
             Polymer.SetLocalizedLanguage(navigator.languages[i]);
             return navigator.languages[i];
           }
         }
-        return 'en';
+
+        // Default to first entry
+        return this.locales[0];
       },
 
       ready: function() {
