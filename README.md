@@ -1,6 +1,6 @@
 # \<webda-i18n\>
 
-Global translation
+Internationalization helper
 
 ## Install the Polymer-CLI
 

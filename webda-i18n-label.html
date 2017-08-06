@@ -1,4 +1,4 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="webda-i18n.html">
 
 <!--
@@ -13,14 +13,17 @@ Global translation
     [[localize(label)]]
   </template>
   <script>
-    Polymer({
-      is: 'webda-i18n-label',
-      behaviors: [Polymer.AppGlobalLocalizeBehavior],
-      properties: {
-        label: {
-          type: String
-        }
-      },
-    });
+    class WebdaI18nLabel extends Polymer.LocalizedMixin(Polymer.Element) {
+      static get is() { return 'webda-i18n-label'; }
+      static get properties() {
+        return {
+          label: {
+            type: String
+          }
+        };
+      }
+    }
+
+    window.customElements.define(WebdaI18nLabel.is, WebdaI18nLabel);
   </script>
 </dom-module>

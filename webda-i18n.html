@@ -1,71 +1,92 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 
-<!--
-`webda-i18n`
-Global translation
-
-@demo demo/index.html
--->
-
 <dom-module id="webda-i18n">
-  <template></template>
-  <script>
-    if (!Polymer.Localized) {
-      Polymer.Localized = [];
-    }
-    if (!Polymer.LocalizedResources) {
-      Polymer.LocalizedResources = 'locales.json';
-    }
-    if (!Polymer.LocalizedLanguage) {
-      Polymer.LocalizedLanguage = '';
-    }
-    if (!Polymer.SetLocalizedLanguage) {
-      Polymer.SetLocalizedLanguage = function(lang) {
-        Polymer.LocalizedLanguage = lang;
-        for (var i in Polymer.Localized) {
-          Polymer.Localized[i].language = lang;
-        }
-      };
-    }
-    Polymer.AppGlobalLocalizeBehaviorImpl = {
+  <template>
+  </template>
 
-      // load localized messages
-      attached: function() {
-        Polymer.Localized.push(this);
-        this.language = Polymer.LocalizedLanguage;
-        this.loadResources(this.resolveUrl(Polymer.LocalizedResources.replace('{locale}', this.language)));
-      },
-      detached: function() {
-        var index = Polymer.Localized.indexOf(this);
-        if (index > -1) {
-          Polymer.Localized.splice(index, 1);
-        }
-      },
-      _date: function(d) {
-        if (typeof(d) === 'string') {
-          d = new Date(d);
-        }
-        if (d === undefined) {
-          return '';
-        }
-        return d.toLocaleDateString([], {
-          hour: 'numeric',
-          minute: 'numeric'
-        });
-      },
-      properties: {
-        language: {
-          value: Polymer.LocalizedLanguage
-        }
+  <script>
+    /**
+     * `webda-i18n`
+     * Internationalization helper
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    Polymer.Localized = Polymer.Localized || [];
+    Polymer.LocalizedResources = Polymer.LocalizedResources || 'locales.json';
+    Polymer.LocalizedLanguage = Polymer.LocalizedLanguage || '';
+    Polymer.SetLocalizedLanguage = Polymer.SetLocalizedLanguage || function(lang) {
+      Polymer.LocalizedLanguage = lang;
+      for (var i in Polymer.Localized) {
+        Polymer.Localized[i].language = lang;
       }
     };
-    Polymer.AppGlobalLocalizeBehavior = [Polymer.AppLocalizeBehavior, Polymer.AppGlobalLocalizeBehaviorImpl];
-    Polymer({
-
-      is: 'webda-i18n',
-
-      _setLocale: function() {
+    
+    Polymer.LocalizedMixin = Polymer.dedupingMixin((superClass) => 
+      class extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], superClass) {
+        // load localized messages
+        attached() {
+          super.attached();
+          Polymer.Localized.push(this);
+          this.language = Polymer.LocalizedLanguage;
+          this.loadResources(this.resolveUrl(Polymer.LocalizedResources.replace('{locale}', this.language)));
+        }
+        detached() {
+          super.detached();
+          var index = Polymer.Localized.indexOf(this);
+          if (index > -1) {
+            Polymer.Localized.splice(index, 1);
+          }
+        }
+        _date(d) {
+          if (typeof(d) === 'string') {
+            d = new Date(d);
+          }
+          if (d === undefined) {
+            return '';
+          }
+          return d.toLocaleDateString([], {
+            hour: 'numeric',
+            minute: 'numeric'
+          });
+        }
+        static get properties() {
+          return {
+            language: {
+              value: Polymer.LocalizedLanguage
+            }
+          };
+        }
+      }
+    );
+    class WebdaI18n extends Polymer.Element {
+      static get is() { return 'webda-i18n'; }
+      static get properties() {
+        return {
+          auto: {
+            type: Boolean,
+            value: false
+          },
+          path: {
+            type: String,
+            value: 'locales.json',
+            observer: '_setPath'
+          },
+          locale: {
+            type: String,
+            value: 'en',
+            observer: '_setLocale',
+            notify: true
+          },
+          locales: {
+            type: Array,
+            value: ['en'],
+          }
+        };
+      }
+       _setLocale() {
         if (!this.locales || !this.locale) {
           return;
         }
@@ -74,18 +95,15 @@ Global translation
           return;
         }
         Polymer.SetLocalizedLanguage(this.locale);
-      },
-
-      _setPath: function() {
+      }
+      _setPath() {
         if (!this.path) {
           return;
         }
         Polymer.LocalizedResources = this.path;
         Polymer.SetLocalizedLanguage(this.locale);
-      },
-
-      detectLocale: function() {
-
+      }
+      detectLocale() {
         // Look into query
         if (top.location.search) {
           let queries = top.location.search.substr(1).split('&');
@@ -99,7 +117,6 @@ Global translation
             }
           }
         }
-
         // Check the browser language
         for (var i in navigator.languages) {
           if (this.locales.indexOf(navigator.languages[i]) >= 0) {
@@ -107,40 +124,17 @@ Global translation
             return navigator.languages[i];
           }
         }
-
         // Default to first entry
         return this.locales[0];
-      },
-
-      ready: function() {
+      }
+      ready() {
+        super.ready();
         if (this.auto) {
           this.locale = this.detectLocale();
         }
-      },
+      }
+    }
 
-      properties: {
-        auto: {
-          type: Boolean,
-          value: false
-        },
-
-        path: {
-          type: String,
-          value: 'locales.json',
-          observer: '_setPath'
-        },
-        locale: {
-          type: String,
-          value: 'en',
-          observer: '_setLocale',
-          notify: true
-        },
-        locales: {
-          type: Array,
-          value: ['en'],
-        },
-      },
-
-    });
+    window.customElements.define(WebdaI18n.is, WebdaI18n);
   </script>
 </dom-module>
