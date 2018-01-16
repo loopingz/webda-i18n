@@ -22,9 +22,11 @@
       for (var i in Polymer.Localized) {
         Polymer.Localized[i].language = lang;
       }
+      // Generates specific event that contains locale if lang is changed
+      window.dispatchEvent(new CustomEvent('locale-changed', { detail: lang, bubbles: true, composed: true }));
     };
     
-    Polymer.LocalizedMixin = Polymer.dedupingMixin((superClass) => 
+    Polymer.LocalizedMixin = Polymer.dedupingMixin((superClass) =>
       class extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], superClass) {
         // load localized messages
         attached() {
